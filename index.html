@@ -3,13 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Concrete Mix Design Calculator (IS 10262:2019)</title>
-  
-  <!-- CSS Styling: Makes the app look clean and modern -->
+  <title>Concrete Mix Design Calculator (IS 10262:2019 + SCMs)</title>
   <style>
     * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
     body { background-color: #f0f4f8; margin: 0; padding: 20px; }
-    .app-container { max-width: 1000px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .app-container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
     
     h1 { color: #1e3a8a; text-align: center; margin-bottom: 5px; }
     p.subtitle { text-align: center; color: #64748b; margin-bottom: 30px; }
@@ -40,7 +38,7 @@
 
 <div class="app-container">
   <h1>Concrete Mix Design Calculator</h1>
-  <p class="subtitle">Based on IS 10262:2019 & IS 456:2000</p>
+  <p class="subtitle">IS 10262:2019 Compliant with SCM Support (Fly Ash & GGBS)</p>
 
   <form id="mixForm">
     <!-- SECTION 1: CONCRETE SPECIFICATIONS -->
@@ -54,16 +52,7 @@
           <option value="30" selected>M30</option>
           <option value="35">M35</option>
           <option value="40">M40</option>
-          <option value="40">M45</option>
-          <option value="40">M50</option>
-          <option value="40">M55</option>
-          <option value="40">M60</option>
-          <option value="40">M65</option>
-          <option value="40">M70</option>
-          <option value="40">M75</option>
-          <option value="40">M80</option>
-          <option value="40">M85</option>
-          <option value="40">M90</option>
+          <option value="50">M50</option>
         </select>
       </div>
       <div class="field">
@@ -75,7 +64,6 @@
         <select id="msa">
           <option value="10">10 mm</option>
           <option value="20" selected>20 mm</option>
-          <option value="10">40 mm</option>
         </select>
       </div>
       <div class="field">
@@ -85,63 +73,53 @@
           <option value="0.50">Moderate (w/c ≤ 0.50)</option>
           <option value="0.45" selected>Severe (w/c ≤ 0.45)</option>
           <option value="0.40">Very Severe (w/c ≤ 0.40)</option>
-          <option value="0.35">Extreme (w/c ≤ 0.35)</option>
         </select>
       </div>
     </div>
 
-    <!-- SECTION 2: MATERIAL SPECIFIC GRAVITIES -->
-    <div class="section-title">2. Material Specific Gravities</div>
+    <!-- SECTION 2: BINDER & SCM MATERIALS -->
+    <div class="section-title">2. Binder & SCM Materials</div>
     <div class="form-grid">
       <div class="field">
-        <label for="sgCement">Cement (OPC):</label>
+        <label for="sgCement">Cement (OPC) Sp. Gr.:</label>
         <input type="number" step="0.01" id="sgCement" value="3.15">
+      </div>
+      <div class="field">
+        <label for="scmType">Mineral Admixture (SCM):</label>
+        <select id="scmType" onchange="updateScmDefaults()">
+          <option value="none">None (100% OPC)</option>
+          <option value="flyash" selected>Fly Ash (PFA)</option>
+          <option value="ggbs">GGBS (Slag)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="scmPercent">SCM Replacement (%):</label>
+        <input type="number" id="scmPercent" value="25">
+      </div>
+      <div class="field">
+        <label for="sgSCM">SCM Specific Gravity:</label>
+        <input type="number" step="0.01" id="sgSCM" value="2.20">
+      </div>
+    </div>
+
+    <!-- SECTION 3: AGGREGATE PROPERTIES -->
+    <div class="section-title">3. Aggregates & Admixtures</div>
     <div class="form-grid">
       <div class="field">
-        <label for="sgFlyash">Flyash:</label>
-        <input type="number" step="0.01" id="sgFlyash" value="2.20">
-      </div>
-      <div class="form-grid">
-      <div class="field">
-        <label for="sgGGBS">GGBS:</label>
-        <input type="number" step="0.01" id="GGBS" value="2.90">
-      </div>
-      <div class="field">
-        <label for="sgCA 20mm">Coarse Aggregate (CA) 20mm:</label>
+        <label for="sgCA">Coarse Aggregate Sp. Gr.:</label>
         <input type="number" step="0.01" id="sgCA" value="2.74">
       </div>
       <div class="field">
-        <label for="sgCA 10mm">Coarse Aggregate (CA) 10mm:</label>
-        <input type="number" step="0.01" id="sgCA" value="2.70">
+        <label for="sgFA">Fine Aggregate Sp. Gr.:</label>
+        <input type="number" step="0.01" id="sgFA" value="2.65">
       </div>
-      <div class="field">
-        <label for="sgFA">Fine Aggregate (C/S Sand):</label>
-        <input type="number" step="0.01" id="sgFA" value="2.64">
-      </div>
-      <div class="field">
-        <label for="zone">Sand Grading Zone:</label>
-        <select id="zone">
-          <option value="1">Zone I</option>
-          <option value="2" selected>Zone II</option>
-          <option value="3">Zone III</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- SECTION 3: CHEMICAL ADMIXTURE -->
-    <div class="section-title">3. Chemical Admixture (Superplasticizer)</div>
-    <div class="form-grid">
       <div class="field">
         <label for="waterRed">Water Reduction (%):</label>
         <input type="number" id="waterRed" value="20">
       </div>
       <div class="field">
-        <label for="admixDosage">Admixture Dosage (% of cement):</label>
+        <label for="admixDosage">Superplasticizer Dosage (%):</label>
         <input type="number" step="0.1" id="admixDosage" value="0.8">
-      </div>
-      <div class="field">
-        <label for="sgAdmix">Admixture Specific Gravity:</label>
-        <input type="number" step="0.01" id="sgAdmix" value="1.12">
       </div>
     </div>
 
@@ -152,21 +130,26 @@
   <div id="resultsCard" class="results-card">
     <h2>Design Mix Proportions (per 1 m³)</h2>
     <p><strong>Target Mean Strength (f'ck):</strong> <span id="outTargetStrength"></span> N/mm²</p>
-    <p><strong>Adopted w/c Ratio:</strong> <span id="outWC"></span></p>
+    <p><strong>Adopted w/b Ratio:</strong> <span id="outWC"></span></p>
     
     <table>
       <thead>
         <tr>
           <th>Material</th>
           <th>Quantity per 1 m³ (kg)</th>
-          <th>Ratio (Relative to Cement)</th>
+          <th>Ratio (Relative to Total Binder)</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td>Cement</td>
+          <td>OPC Cement</td>
           <td id="outCement">--</td>
-          <td>1.00</td>
+          <td id="ratioCement">--</td>
+        </tr>
+        <tr id="scmRow">
+          <td>SCM (<span id="outScmName">Fly Ash</span>)</td>
+          <td id="outSCM">--</td>
+          <td id="ratioSCM">--</td>
         </tr>
         <tr>
           <td>Water</td>
@@ -179,13 +162,8 @@
           <td id="ratioFA">--</td>
         </tr>
         <tr>
-          <td>Coarse Aggregate 20mm</td>
-          <td id="outCA 20mm">--</td>
-          <td id="ratioCA">--</td>
-        </tr>
-        <tr>
-          <td>Coarse Aggregate 10mm</td>
-          <td id="outCA 10mm">--</td>
+          <td>Coarse Aggregate</td>
+          <td id="outCA">--</td>
           <td id="ratioCA">--</td>
         </tr>
         <tr>
@@ -200,103 +178,112 @@
   </div>
 </div>
 
-<!-- JAVASCRIPT LOGIC ENGINE -->
 <script>
+// Auto-update default specific gravities when SCM type changes
+function updateScmDefaults() {
+  const scmType = document.getElementById('scmType').value;
+  const sgSCM = document.getElementById('sgSCM');
+  const scmPercent = document.getElementById('scmPercent');
+
+  if (scmType === 'flyash') {
+    sgSCM.value = "2.20";
+    scmPercent.value = "25";
+  } else if (scmType === 'ggbs') {
+    sgSCM.value = "2.90";
+    scmPercent.value = "40";
+  } else {
+    sgSCM.value = "1.00";
+    scmPercent.value = "0";
+  }
+}
+
 function calculateMixProportions() {
-  // 1. Read values from input fields
+  // Inputs
   const fck = parseFloat(document.getElementById('grade').value);
   const slump = parseFloat(document.getElementById('slump').value);
   const msa = document.getElementById('msa').value;
   const maxWC = parseFloat(document.getElementById('exposure').value);
   
   const sgCement = parseFloat(document.getElementById('sgCement').value);
-  const sgCement = parseFloat(document.getElementById('sgFlyash').value);
-  const sgCement = parseFloat(document.getElementById('sgGGBS').value);
-  const sgCA = parseFloat(document.getElementById('sgCA 20mm').value);
-  const sgCA = parseFloat(document.getElementById('sgCA 10mm').value);
+  const scmType = document.getElementById('scmType').value;
+  const scmPercent = parseFloat(document.getElementById('scmPercent').value);
+  const sgSCM = parseFloat(document.getElementById('sgSCM').value);
+  
+  const sgCA = parseFloat(document.getElementById('sgCA').value);
   const sgFA = parseFloat(document.getElementById('sgFA').value);
   
   const waterRed = parseFloat(document.getElementById('waterRed').value);
   const admixDosage = parseFloat(document.getElementById('admixDosage').value);
-  const sgAdmix = parseFloat(document.getElementById('sgAdmix').value);
 
-  // 2. Step 1: Target Mean Strength (f'ck = fck + 1.65 * S)
-  let S = 4.0;
-  if (fck >= 30) S = 5.0;
+  // 1. Target Mean Strength
+  let S = fck >= 30 ? 5.0 : 4.0;
   const f_prime_ck = fck + (1.65 * S);
 
-  // 3. Step 2: Selection of w/c ratio
-  // Standard recommended w/c ratio based on strength curve or exposure limit
-  let wcRatio = 0.45;
-  if (fck >= 40) wcRatio = 0.40;
-  if (wcRatio > maxWC) wcRatio = maxWC; // Check exposure limit
+  // 2. Water-Binder (w/b) Ratio
+  let wbRatio = fck >= 40 ? 0.40 : 0.45;
+  if (wbRatio > maxWC) wbRatio = maxWC;
 
-  // 4. Step 3: Calculation of SCM's
-  // Stardard recommended Flyash content replaced upto 35% of cement content
-  let flyashcontent = 35%;
-  if (cementcontent >= 100) flyashcontent = upto 35% of cementcontent
-
-  // 5. Step 4: Calculation of Water Content
-   // Stardard recommended GGBS content replaced upto 70% of cement content
-  let GGBScontent = 70%;
-  if (cementcontent >= 100) GGBScontent = upto 70% of cementcontent
-  
-  // 6. Step 5: Calculation of Water Content
-  // Base water for 50mm slump: 20mm aggregate = 186 L, 10mm aggregate = 208 L
+  // 3. Water Content Calculation
   let baseWater = (msa === "20") ? 186 : 208;
-  
-  // Slump adjustment: +3% for every 25mm above 50mm
   let extraSlump = slump - 50;
   let adjustedWater = baseWater + (baseWater * (extraSlump / 25) * 0.03);
-  
-  // Superplasticizer reduction
   let finalWater = adjustedWater * (1 - (waterRed / 100));
 
-  // 7. Step 6: Calculation of Cement Content
-  let cementContent = finalWater / wcRatio;
-  if (cementContent < 320) cementContent = 320; // Minimum cement content check per IS 456
+  // 4. Total Binder Content (Cement + SCM)
+  let totalBinder = finalWater / wbRatio;
+  if (totalBinder < 320) totalBinder = 320; // Minimum binder check per IS 456
 
-  // 6. Step 5: Proportions of Coarse and Fine Aggregates
-  // For 20mm aggregate in Zone II, base Coarse Aggregate volume is ~62% (0.62)
+  // Mass of OPC and SCM
+  let massSCM = scmType !== 'none' ? totalBinder * (scmPercent / 100) : 0;
+  let massCement = totalBinder - massSCM;
+
+  // 5. Volumetric Calculation per 1 m³
+  let volAir = 0.01; // 1% entrapped air
+  let volCement = massCement / (sgCement * 1000);
+  let volSCM = massSCM > 0 ? massSCM / (sgSCM * 1000) : 0;
+  let volWater = finalWater / 1000;
+  
+  let admixMass = (totalBinder * admixDosage) / 100;
+  let volAdmix = admixMass / (1.12 * 1000);
+
+  // Net Volume Available for Aggregates
+  let volAllAgg = 1.0 - (volAir + volCement + volSCM + volWater + volAdmix);
+
+  // Coarse vs Fine Aggregate Proportioning (62% CA for 20mm MSA)
   let volCA_fraction = 0.62;
   let volFA_fraction = 1.0 - volCA_fraction;
 
-  // 7. Step 6: Volumetric Calculations (per 1 m³)
-  let volAir = 0.01; // 1% entrapped air
-  let volCement = cementContent / (sgCement * 1000);
-  let volWater = finalWater / 1000;
-  
-  let admixMass = (cementContent * admixDosage) / 100;
-  let volAdmix = admixMass / (sgAdmix * 1000);
-
-  // Remaining volume for aggregates
-  let volAllAgg = 1.0 - (volAir + volCement + volWater + volAdmix);
-
-  // Mass of aggregates
   let massCA = volAllAgg * volCA_fraction * sgCA * 1000;
-  let massCA20mm = massCA * 0.6;
-  let massCA10mm = massCA - massCA20mm;
   let massFA = volAllAgg * volFA_fraction * sgFA * 1000;
 
-  // 8. Output Results to the HTML Page
+  // 6. UI Render
   document.getElementById('outTargetStrength').innerText = f_prime_ck.toFixed(2);
-  document.getElementById('outWC').innerText = wcRatio.toFixed(2);
-  document.getElementById('outCement').innerText = cementContent.toFixed(1);
-  document.getElementById('outFlyash').innerText = FlyashContent.toFixed(1);
-  document.getElementById('outGGBS').innerText = GGBSContent.toFixed(1);
+  document.getElementById('outWC').innerText = wbRatio.toFixed(2);
+  
+  document.getElementById('outCement').innerText = massCement.toFixed(1);
+  document.getElementById('outSCM').innerText = massSCM.toFixed(1);
   document.getElementById('outWater').innerText = finalWater.toFixed(1);
   document.getElementById('outFA').innerText = massFA.toFixed(1);
-  document.getElementById('outCA 20mm').innerText = massCA 20mm.toFixed(1);
-  document.getElementById('outCA 10mm').innerText = massCA 10mm.toFixed(1);
+  document.getElementById('outCA').innerText = massCA.toFixed(1);
   document.getElementById('outAdmix').innerText = admixMass.toFixed(2);
 
-  // Proportional Ratios (1 : FA/Cement : CA/Cement)
-  document.getElementById('ratioWater').innerText = (finalWater / cementContent).toFixed(2);
-  document.getElementById('ratioFA').innerText = (massFA / cementContent).toFixed(2);
-  document.getElementById('ratioCA').innerText = (massCA / cementContent).toFixed(2);
-  document.getElementById('ratioAdmix').innerText = (admixMass / cementContent).toFixed(4);
+  // Ratios relative to total binder
+  document.getElementById('ratioCement').innerText = (massCement / totalBinder).toFixed(2);
+  document.getElementById('ratioSCM').innerText = (massSCM / totalBinder).toFixed(2);
+  document.getElementById('ratioWater').innerText = (finalWater / totalBinder).toFixed(2);
+  document.getElementById('ratioFA').innerText = (massFA / totalBinder).toFixed(2);
+  document.getElementById('ratioCA').innerText = (massCA / totalBinder).toFixed(2);
+  document.getElementById('ratioAdmix').innerText = (admixMass / totalBinder).toFixed(4);
 
-  // Show the hidden results card
+  // SCM Row Display Control
+  const scmRow = document.getElementById('scmRow');
+  if (scmType === 'none') {
+    scmRow.style.display = 'none';
+  } else {
+    scmRow.style.display = 'table-row';
+    document.getElementById('outScmName').innerText = scmType === 'flyash' ? 'Fly Ash' : 'GGBS';
+  }
+
   document.getElementById('resultsCard').style.display = 'block';
 }
 </script>
