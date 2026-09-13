@@ -3,89 +3,103 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Concrete Mix Design Calculator (IS 10262:2019 + SCMs)</title>
+  <title>Advanced Concrete Mix Design & Rate Analysis Calculator</title>
   <style>
-    * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-    body { background-color: #f0f4f8; margin: 0; padding: 20px; }
-    .app-container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f1f5f9; margin: 0; padding: 20px; color: #1e293b; }
+    .app-container { max-width: 1050px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
     
-    h1 { color: #1e3a8a; text-align: center; margin-bottom: 5px; }
-    p.subtitle { text-align: center; color: #64748b; margin-bottom: 30px; }
+    h1 { color: #0f172a; text-align: center; margin-bottom: 5px; font-size: 1.8rem; }
+    p.subtitle { text-align: center; color: #64748b; margin-bottom: 25px; font-size: 0.95rem; }
     
-    .section-title { background: #e2e8f0; padding: 8px 12px; font-weight: bold; color: #334155; border-radius: 6px; margin-top: 20px; }
+    .section-title { background: #e2e8f0; padding: 10px 14px; font-weight: 700; color: #334155; border-radius: 6px; margin-top: 25px; font-size: 1rem; }
     
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 15px; margin-top: 15px; }
     .field { display: flex; flex-direction: column; }
-    label { font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 5px; }
-    input, select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; }
+    label { font-size: 0.82rem; font-weight: 600; color: #475569; margin-bottom: 6px; }
+    input, select { padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.92rem; transition: border 0.2s; }
+    input:focus, select:focus { outline: none; border-color: #2563eb; }
     
-    .btn-calc { margin-top: 30px; width: 100%; padding: 14px; background: #2563eb; color: white; border: none; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; }
+    .btn-calc { margin-top: 30px; width: 100%; padding: 14px; background: #2563eb; color: #ffffff; border: none; font-size: 1.1rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
     .btn-calc:hover { background: #1d4ed8; }
     
-    .results-card { margin-top: 30px; background: #f8fafc; border: 2px solid #2563eb; border-radius: 10px; padding: 20px; display: none; }
-    .results-card h2 { color: #1e3a8a; margin-top: 0; }
+    .results-card { margin-top: 30px; background: #ffffff; border: 2px solid #2563eb; border-radius: 10px; padding: 25px; display: none; }
+    .results-card h2 { color: #1e3a8a; margin-top: 0; font-size: 1.4rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
     
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
-    th, td { border: 1px solid #cbd5e1; padding: 12px; text-align: left; }
-    th { background: #2563eb; color: white; }
-    tr:nth-child(even) { background: #f1f5f9; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #ffffff; }
+    th, td { border: 1px solid #cbd5e1; padding: 10px 12px; text-align: left; font-size: 0.9rem; }
+    th { background: #2563eb; color: #ffffff; font-weight: 600; }
+    tr:nth-child(even) { background: #f8fafc; }
+    .highlight-cell { background-color: #eff6ff; font-weight: bold; color: #1e40af; }
     
-    .print-btn { background: #059669; color: white; border: none; padding: 10px 15px; margin-top: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; }
+    .prop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
+    .prop-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; }
+    .prop-box h4 { margin: 0 0 8px 0; color: #0f172a; font-size: 0.95rem; }
+    .prop-value { font-size: 1.25rem; font-weight: 700; color: #2563eb; margin: 4px 0; }
+    .prop-desc { font-size: 0.78rem; color: #64748b; margin: 0; }
+
+    .cost-card { background: #ecfdf5; border: 1.5px solid #10b981; border-radius: 8px; padding: 20px; margin-top: 25px; }
+    .cost-card h3 { color: #065f46; margin-top: 0; margin-bottom: 10px; }
+    .total-cost { font-size: 1.6rem; font-weight: 800; color: #047857; margin: 10px 0; }
+    
+    .print-btn { background: #059669; color: white; border: none; padding: 10px 18px; margin-top: 25px; font-weight: 600; border-radius: 6px; cursor: pointer; }
     .print-btn:hover { background: #047857; }
   </style>
 </head>
 <body>
 
 <div class="app-container">
-  <h1>Concrete Mix Design Calculator</h1>
-  <p class="subtitle">IS 10262:2019 Compliant with SCM Support (Fly Ash & GGBS)</p>
+  <h1>Concrete Mix Design & Rate Analysis</h1>
+  <p class="subtitle">IS 10262:2019 Compliant | 20mm & 10mm Blending | Field Corrections | Real-Time Cost Analysis</p>
 
   <form id="mixForm">
-    <!-- SECTION 1: CONCRETE SPECIFICATIONS -->
-    <div class="section-title">1. Concrete Specifications</div>
+    <!-- SECTION 1: SPECIFICATIONS -->
+    <div class="section-title">1. Structural & Exposure Specifications</div>
     <div class="form-grid">
       <div class="field">
-        <label for="grade">Concrete Grade (fck):</label>
+        <label for="grade">Characteristic Strength (fck):</label>
         <select id="grade">
           <option value="20">M20</option>
           <option value="25">M25</option>
           <option value="30" selected>M30</option>
           <option value="35">M35</option>
           <option value="40">M40</option>
+          <option value="45">M45</option>
           <option value="50">M50</option>
         </select>
       </div>
       <div class="field">
-        <label for="slump">Required Slump (mm):</label>
+        <label for="slump">Target Slump (mm):</label>
         <input type="number" id="slump" value="100">
       </div>
       <div class="field">
-        <label for="msa">Max Aggregate Size (MSA):</label>
-        <select id="msa">
-          <option value="10">10 mm</option>
-          <option value="20" selected>20 mm</option>
+        <label for="exposure">Exposure Condition (IS 456):</label>
+        <select id="exposure">
+          <option value="0.55">Mild (Max w/c = 0.55)</option>
+          <option value="0.50">Moderate (Max w/c = 0.50)</option>
+          <option value="0.45" selected>Severe (Max w/c = 0.45)</option>
+          <option value="0.40">Very Severe (Max w/c = 0.40)</option>
         </select>
       </div>
       <div class="field">
-        <label for="exposure">Exposure Condition:</label>
-        <select id="exposure">
-          <option value="0.55">Mild (w/c ≤ 0.55)</option>
-          <option value="0.50">Moderate (w/c ≤ 0.50)</option>
-          <option value="0.45" selected>Severe (w/c ≤ 0.45)</option>
-          <option value="0.40">Very Severe (w/c ≤ 0.40)</option>
-        </select>
+        <label for="caRatio20">20mm Agg. Blend Ratio (%):</label>
+        <input type="number" id="caRatio20" value="60" onchange="syncAggregateRatios(20)">
+      </div>
+      <div class="field">
+        <label for="caRatio10">10mm Agg. Blend Ratio (%):</label>
+        <input type="number" id="caRatio10" value="40" onchange="syncAggregateRatios(10)">
       </div>
     </div>
 
-    <!-- SECTION 2: BINDER & SCM MATERIALS -->
-    <div class="section-title">2. Binder & SCM Materials</div>
+    <!-- SECTION 2: BINDER MATERIALS -->
+    <div class="section-title">2. Cement & Supplementary Cementitious Materials (SCM)</div>
     <div class="form-grid">
       <div class="field">
-        <label for="sgCement">Cement (OPC) Sp. Gr.:</label>
+        <label for="sgCement">Cement (OPC 53) Sp. Gr.:</label>
         <input type="number" step="0.01" id="sgCement" value="3.15">
       </div>
       <div class="field">
-        <label for="scmType">Mineral Admixture (SCM):</label>
+        <label for="scmType">Mineral Admixture Type:</label>
         <select id="scmType" onchange="updateScmDefaults()">
           <option value="none">None (100% OPC)</option>
           <option value="flyash" selected>Fly Ash (PFA)</option>
@@ -102,84 +116,236 @@
       </div>
     </div>
 
-    <!-- SECTION 3: AGGREGATE PROPERTIES -->
-    <div class="section-title">3. Aggregates & Admixtures</div>
+    <!-- SECTION 3: AGGREGATE PROPERTIES & FIELD CORRECTIONS -->
+    <div class="section-title">3. Aggregates Physical & Field Moisture Inputs</div>
     <div class="form-grid">
       <div class="field">
-        <label for="sgCA">Coarse Aggregate Sp. Gr.:</label>
-        <input type="number" step="0.01" id="sgCA" value="2.74">
+        <label for="sgCA20">20mm CA Specific Gravity:</label>
+        <input type="number" step="0.01" id="sgCA20" value="2.74">
       </div>
       <div class="field">
-        <label for="sgFA">Fine Aggregate Sp. Gr.:</label>
+        <label for="absorpCA20">20mm Water Absorption (%):</label>
+        <input type="number" step="0.1" id="absorpCA20" value="0.5">
+      </div>
+      <div class="field">
+        <label for="moistCA20">20mm Field Moisture (%):</label>
+        <input type="number" step="0.1" id="moistCA20" value="0.2">
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label for="sgCA10">10mm CA Specific Gravity:</label>
+        <input type="number" step="0.01" id="sgCA10" value="2.72">
+      </div>
+      <div class="field">
+        <label for="absorpCA10">10mm Water Absorption (%):</label>
+        <input type="number" step="0.1" id="absorpCA10" value="0.8">
+      </div>
+      <div class="field">
+        <label for="moistCA10">10mm Field Moisture (%):</label>
+        <input type="number" step="0.1" id="moistCA10" value="0.5">
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label for="sgFA">Fine Agg (Sand) Sp. Gr.:</label>
         <input type="number" step="0.01" id="sgFA" value="2.65">
       </div>
       <div class="field">
-        <label for="waterRed">Water Reduction (%):</label>
-        <input type="number" id="waterRed" value="20">
+        <label for="absorpFA">Sand Water Absorption (%):</label>
+        <input type="number" step="0.1" id="absorpFA" value="1.0">
       </div>
       <div class="field">
-        <label for="admixDosage">Superplasticizer Dosage (%):</label>
-        <input type="number" step="0.1" id="admixDosage" value="0.8">
+        <label for="moistFA">Sand Field Moisture (%):</label>
+        <input type="number" step="0.1" id="moistFA" value="2.5">
       </div>
     </div>
 
-    <button type="button" class="btn-calc" onclick="calculateMixProportions()">Calculate Batch Weights</button>
+    <!-- SECTION 4: ADMIXTURES -->
+    <div class="section-title">4. Chemical Admixtures</div>
+    <div class="form-grid">
+      <div class="field">
+        <label for="waterRed">Water Reduction achieved (%):</label>
+        <input type="number" id="waterRed" value="20">
+      </div>
+      <div class="field">
+        <label for="admixDosage">PCE Dosage (% of Binder):</label>
+        <input type="number" step="0.1" id="admixDosage" value="0.8">
+      </div>
+      <div class="field">
+        <label for="sgAdmix">Admixture Specific Gravity:</label>
+        <input type="number" step="0.01" id="sgAdmix" value="1.08">
+      </div>
+    </div>
+
+    <!-- SECTION 5: MATERIAL UNIT RATES -->
+    <div class="section-title">5. Material Cost Inputs (Unit Prices)</div>
+    <div class="form-grid">
+      <div class="field">
+        <label for="costCement">Cement Rate (₹/kg):</label>
+        <input type="number" step="0.1" id="costCement" value="7.0">
+      </div>
+      <div class="field">
+        <label for="costSCM">Fly Ash / SCM Rate (₹/kg):</label>
+        <input type="number" step="0.1" id="costSCM" value="2.5">
+      </div>
+      <div class="field">
+        <label for="costWater">Water Rate (₹/Litre):</label>
+        <input type="number" step="0.01" id="costWater" value="0.05">
+      </div>
+      <div class="field">
+        <label for="costFA">Sand / FA Rate (₹/kg):</label>
+        <input type="number" step="0.05" id="costFA" value="1.20">
+      </div>
+      <div class="field">
+        <label for="costCA20">20mm Aggregate Rate (₹/kg):</label>
+        <input type="number" step="0.05" id="costCA20" value="0.95">
+      </div>
+      <div class="field">
+        <label for="costCA10">10mm Aggregate Rate (₹/kg):</label>
+        <input type="number" step="0.05" id="costCA10" value="1.05">
+      </div>
+      <div class="field">
+        <label for="costAdmix">Admixture Rate (₹/kg):</label>
+        <input type="number" step="1" id="costAdmix" value="85">
+      </div>
+    </div>
+
+    <button type="button" class="btn-calc" onclick="calculateMixProportions()">Calculate Proportions, Properties & Rate Analysis</button>
   </form>
 
-  <!-- RESULTS DISPLAY AREA -->
+  <!-- RESULTS SECTION -->
   <div id="resultsCard" class="results-card">
-    <h2>Design Mix Proportions (per 1 m³)</h2>
-    <p><strong>Target Mean Strength (f'ck):</strong> <span id="outTargetStrength"></span> N/mm²</p>
-    <p><strong>Adopted w/b Ratio:</strong> <span id="outWC"></span></p>
+    <h2>Design Mix Proportions & Cost Profile (per 1 m³)</h2>
+    <p style="margin-bottom: 20px;">
+      <strong>Target Mean Strength (f'ck):</strong> <span id="outTargetStrength"></span> N/mm² &nbsp;|&nbsp; 
+      <strong>Adopted w/b Ratio:</strong> <span id="outWC"></span>
+    </p>
     
     <table>
       <thead>
         <tr>
-          <th>Material</th>
-          <th>Quantity per 1 m³ (kg)</th>
-          <th>Ratio (Relative to Total Binder)</th>
+          <th>Material Component</th>
+          <th>Design SSD Weight (kg)</th>
+          <th>Field Batch Weight (kg)</th>
+          <th>Unit Rate (₹/kg)</th>
+          <th>Total Component Cost (₹)</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td>OPC Cement</td>
           <td id="outCement">--</td>
-          <td id="ratioCement">--</td>
+          <td id="outCementField" class="highlight-cell">--</td>
+          <td id="rateCement">--</td>
+          <td id="costCementTotal">--</td>
         </tr>
         <tr id="scmRow">
           <td>SCM (<span id="outScmName">Fly Ash</span>)</td>
           <td id="outSCM">--</td>
-          <td id="ratioSCM">--</td>
+          <td id="outSCMField" class="highlight-cell">--</td>
+          <td id="rateSCM">--</td>
+          <td id="costSCMTotal">--</td>
         </tr>
         <tr>
-          <td>Water</td>
+          <td>Mixing Water</td>
           <td id="outWater">--</td>
-          <td id="ratioWater">--</td>
+          <td id="outWaterField" class="highlight-cell">--</td>
+          <td id="rateWater">--</td>
+          <td id="costWaterTotal">--</td>
         </tr>
         <tr>
           <td>Fine Aggregate (Sand)</td>
           <td id="outFA">--</td>
-          <td id="ratioFA">--</td>
+          <td id="outFAField" class="highlight-cell">--</td>
+          <td id="rateFA">--</td>
+          <td id="costFATotal">--</td>
         </tr>
         <tr>
-          <td>Coarse Aggregate</td>
-          <td id="outCA">--</td>
-          <td id="ratioCA">--</td>
+          <td>Coarse Aggregate 20 mm (<span id="outRatio20">60</span>%)</td>
+          <td id="outCA20">--</td>
+          <td id="outCA20Field" class="highlight-cell">--</td>
+          <td id="rateCA20">--</td>
+          <td id="costCA20Total">--</td>
+        </tr>
+        <tr>
+          <td>Coarse Aggregate 10 mm (<span id="outRatio10">40</span>%)</td>
+          <td id="outCA10">--</td>
+          <td id="outCA10Field" class="highlight-cell">--</td>
+          <td id="rateCA10">--</td>
+          <td id="costCA10Total">--</td>
         </tr>
         <tr>
           <td>Chemical Admixture</td>
           <td id="outAdmix">--</td>
-          <td id="ratioAdmix">--</td>
+          <td id="outAdmixField" class="highlight-cell">--</td>
+          <td id="rateAdmix">--</td>
+          <td id="costAdmixTotal">--</td>
         </tr>
       </tbody>
     </table>
 
-    <button class="print-btn" onclick="window.print()">Print / Save PDF Report</button>
+    <!-- RATE ANALYSIS SUMMARY CARD -->
+    <div class="cost-card">
+      <h3>Material Rate Analysis Summary</h3>
+      <div class="total-cost">Total Direct Concrete Cost: ₹ <span id="outTotalCost">0.00</span> / m³</div>
+      <p style="margin: 0; font-size: 0.88rem; color: #047857;">
+        Cementitious Share: <strong><span id="outBinderCostPct">0</span>%</strong> | 
+        Aggregates Share: <strong><span id="outAggCostPct">0</span>%</strong> | 
+        Admixture Share: <strong><span id="outAdmixCostPct">0</span>%</strong>
+      </p>
+    </div>
+
+    <!-- MECHANICAL PROPERTIES -->
+    <h3 style="margin-top: 30px; color: #1e3a8a; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px;">Fresh & Hardened Concrete Mechanical Properties</h3>
+    <div class="prop-grid">
+      <div class="prop-box">
+        <h4>Flexural Strength (fcr)</h4>
+        <div class="prop-value" id="outFlexural">--</div>
+        <p class="prop-desc">0.7 × √fck (N/mm²)</p>
+      </div>
+      <div class="prop-box">
+        <h4>Modulus of Elasticity (Ec)</h4>
+        <div class="prop-value" id="outModulus">--</div>
+        <p class="prop-desc">5000 × √fck (MPa)</p>
+      </div>
+      <div class="prop-box">
+        <h4>Split Tensile Strength (fct)</h4>
+        <div class="prop-value" id="outTensile">--</div>
+        <p class="prop-desc">0.56 × √fck (N/mm²)</p>
+      </div>
+      <div class="prop-box">
+        <h4>Fresh Wet Density</h4>
+        <div class="prop-value" id="outDensity">--</div>
+        <p class="prop-desc">Calculated wet mass per m³</p>
+      </div>
+      <div class="prop-box">
+        <h4>Concrete Yield</h4>
+        <div class="prop-value" id="outYield">--</div>
+        <p class="prop-desc">Yield efficiency per design batch</p>
+      </div>
+      <div class="prop-box">
+        <h4>Workability Category</h4>
+        <div class="prop-value" id="outWorkability">--</div>
+        <p class="prop-desc">Based on target slump demand</p>
+      </div>
+    </div>
+
+    <button class="print-btn" onclick="window.print()">Print Cost Sheet / Save PDF</button>
   </div>
 </div>
 
 <script>
-// Auto-update default specific gravities when SCM type changes
+function syncAggregateRatios(changed) {
+  const ca20 = document.getElementById('caRatio20');
+  const ca10 = document.getElementById('caRatio10');
+  if (changed === 20) {
+    ca10.value = Math.max(0, 100 - parseFloat(ca20.value || 0));
+  } else {
+    ca20.value = Math.max(0, 100 - parseFloat(ca10.value || 0));
+  }
+}
+
 function updateScmDefaults() {
   const scmType = document.getElementById('scmType').value;
   const sgSCM = document.getElementById('sgSCM');
@@ -201,81 +367,176 @@ function calculateMixProportions() {
   // Inputs
   const fck = parseFloat(document.getElementById('grade').value);
   const slump = parseFloat(document.getElementById('slump').value);
-  const msa = document.getElementById('msa').value;
   const maxWC = parseFloat(document.getElementById('exposure').value);
   
+  const ratio20 = parseFloat(document.getElementById('caRatio20').value) / 100;
+  const ratio10 = parseFloat(document.getElementById('caRatio10').value) / 100;
+
   const sgCement = parseFloat(document.getElementById('sgCement').value);
   const scmType = document.getElementById('scmType').value;
   const scmPercent = parseFloat(document.getElementById('scmPercent').value);
   const sgSCM = parseFloat(document.getElementById('sgSCM').value);
   
-  const sgCA = parseFloat(document.getElementById('sgCA').value);
+  const sgCA20 = parseFloat(document.getElementById('sgCA20').value);
+  const absorpCA20 = parseFloat(document.getElementById('absorpCA20').value);
+  const moistCA20 = parseFloat(document.getElementById('moistCA20').value);
+
+  const sgCA10 = parseFloat(document.getElementById('sgCA10').value);
+  const absorpCA10 = parseFloat(document.getElementById('absorpCA10').value);
+  const moistCA10 = parseFloat(document.getElementById('moistCA10').value);
+  
   const sgFA = parseFloat(document.getElementById('sgFA').value);
+  const absorpFA = parseFloat(document.getElementById('absorpFA').value);
+  const moistFA = parseFloat(document.getElementById('moistFA').value);
   
   const waterRed = parseFloat(document.getElementById('waterRed').value);
   const admixDosage = parseFloat(document.getElementById('admixDosage').value);
+  const sgAdmix = parseFloat(document.getElementById('sgAdmix').value);
 
-  // 1. Target Mean Strength
+  // Unit Price Inputs
+  const rCement = parseFloat(document.getElementById('costCement').value || 0);
+  const rSCM = parseFloat(document.getElementById('costSCM').value || 0);
+  const rWater = parseFloat(document.getElementById('costWater').value || 0);
+  const rFA = parseFloat(document.getElementById('costFA').value || 0);
+  const rCA20 = parseFloat(document.getElementById('costCA20').value || 0);
+  const rCA10 = parseFloat(document.getElementById('costCA10').value || 0);
+  const rAdmix = parseFloat(document.getElementById('costAdmix').value || 0);
+
+  // Target Strength & w/b
   let S = fck >= 30 ? 5.0 : 4.0;
   const f_prime_ck = fck + (1.65 * S);
-
-  // 2. Water-Binder (w/b) Ratio
   let wbRatio = fck >= 40 ? 0.40 : 0.45;
   if (wbRatio > maxWC) wbRatio = maxWC;
 
-  // 3. Water Content Calculation
-  let baseWater = (msa === "20") ? 186 : 208;
+  // Water & Binder
+  let baseWater = 186;
   let extraSlump = slump - 50;
   let adjustedWater = baseWater + (baseWater * (extraSlump / 25) * 0.03);
   let finalWater = adjustedWater * (1 - (waterRed / 100));
 
-  // 4. Total Binder Content (Cement + SCM)
   let totalBinder = finalWater / wbRatio;
-  if (totalBinder < 320) totalBinder = 320; // Minimum binder check per IS 456
+  if (totalBinder < 320) totalBinder = 320;
 
-  // Mass of OPC and SCM
   let massSCM = scmType !== 'none' ? totalBinder * (scmPercent / 100) : 0;
   let massCement = totalBinder - massSCM;
 
-  // 5. Volumetric Calculation per 1 m³
-  let volAir = 0.01; // 1% entrapped air
+  // Aggregate Volumes
+  let volAir = 0.01;
   let volCement = massCement / (sgCement * 1000);
   let volSCM = massSCM > 0 ? massSCM / (sgSCM * 1000) : 0;
   let volWater = finalWater / 1000;
   
   let admixMass = (totalBinder * admixDosage) / 100;
-  let volAdmix = admixMass / (1.12 * 1000);
+  let volAdmix = admixMass / (sgAdmix * 1000);
 
-  // Net Volume Available for Aggregates
   let volAllAgg = 1.0 - (volAir + volCement + volSCM + volWater + volAdmix);
 
-  // Coarse vs Fine Aggregate Proportioning (62% CA for 20mm MSA)
   let volCA_fraction = 0.62;
   let volFA_fraction = 1.0 - volCA_fraction;
 
-  let massCA = volAllAgg * volCA_fraction * sgCA * 1000;
-  let massFA = volAllAgg * volFA_fraction * sgFA * 1000;
+  let massCA20_design = volAllAgg * volCA_fraction * ratio20 * sgCA20 * 1000;
+  let massCA10_design = volAllAgg * volCA_fraction * ratio10 * sgCA10 * 1000;
+  let massFA_design = volAllAgg * volFA_fraction * sgFA * 1000;
 
-  // 6. UI Render
+  // Moisture Corrections
+  let netCA20_pct = moistCA20 - absorpCA20;
+  let netCA10_pct = moistCA10 - absorpCA10;
+  let netFA_pct = moistFA - absorpFA;
+
+  let extraWaterCA20 = massCA20_design * (netCA20_pct / 100);
+  let extraWaterCA10 = massCA10_design * (netCA10_pct / 100);
+  let extraWaterFA = massFA_design * (netFA_pct / 100);
+
+  let massCA20_field = massCA20_design + extraWaterCA20;
+  let massCA10_field = massCA10_design + extraWaterCA10;
+  let massFA_field = massFA_design + extraWaterFA;
+  let finalWater_field = finalWater - extraWaterCA20 - extraWaterCA10 - extraWaterFA;
+
+  let totalSSD = massCement + massSCM + finalWater + massCA20_design + massCA10_design + massFA_design + admixMass;
+  let totalField = massCement + massSCM + finalWater_field + massCA20_field + massCA10_field + massFA_field + admixMass;
+
+  // Cost Calculations
+  let cCement = massCement * rCement;
+  let cSCM = massSCM * rSCM;
+  let cWater = finalWater_field * rWater;
+  let cFA = massFA_field * rFA;
+  let cCA20 = massCA20_field * rCA20;
+  let cCA10 = massCA10_field * rCA10;
+  let cAdmix = admixMass * rAdmix;
+
+  let totalCost = cCement + cSCM + cWater + cFA + cCA20 + cCA10 + cAdmix;
+
+  let binderCostPct = (((cCement + cSCM) / totalCost) * 100).toFixed(1);
+  let aggCostPct = (((cFA + cCA20 + cCA10) / totalCost) * 100).toFixed(1);
+  let admixCostPct = ((cAdmix / totalCost) * 100).toFixed(1);
+
+  // Mechanical Properties
+  let flexuralStr = 0.7 * Math.sqrt(fck);
+  let elasticModulus = 5000 * Math.sqrt(fck);
+  let splitTensile = 0.56 * Math.sqrt(fck);
+  let concreteYield = totalField / totalSSD;
+
+  let workabilityStatus = "Medium";
+  if (slump < 50) workabilityStatus = "Low";
+  else if (slump >= 100 && slump < 150) workabilityStatus = "High";
+  else if (slump >= 150) workabilityStatus = "Very High (Pumpable)";
+
+  // UI Output
   document.getElementById('outTargetStrength').innerText = f_prime_ck.toFixed(2);
   document.getElementById('outWC').innerText = wbRatio.toFixed(2);
   
   document.getElementById('outCement').innerText = massCement.toFixed(1);
+  document.getElementById('outCementField').innerText = massCement.toFixed(1);
+  document.getElementById('rateCement').innerText = rCement.toFixed(2);
+  document.getElementById('costCementTotal').innerText = cCement.toFixed(2);
+  
   document.getElementById('outSCM').innerText = massSCM.toFixed(1);
+  document.getElementById('outSCMField').innerText = massSCM.toFixed(1);
+  document.getElementById('rateSCM').innerText = rSCM.toFixed(2);
+  document.getElementById('costSCMTotal').innerText = cSCM.toFixed(2);
+
   document.getElementById('outWater').innerText = finalWater.toFixed(1);
-  document.getElementById('outFA').innerText = massFA.toFixed(1);
-  document.getElementById('outCA').innerText = massCA.toFixed(1);
+  document.getElementById('outWaterField').innerText = finalWater_field.toFixed(1);
+  document.getElementById('rateWater').innerText = rWater.toFixed(2);
+  document.getElementById('costWaterTotal').innerText = cWater.toFixed(2);
+  
+  document.getElementById('outFA').innerText = massFA_design.toFixed(1);
+  document.getElementById('outFAField').innerText = massFA_field.toFixed(1);
+  document.getElementById('rateFA').innerText = rFA.toFixed(2);
+  document.getElementById('costFATotal').innerText = cFA.toFixed(2);
+  
+  document.getElementById('outRatio20').innerText = (ratio20 * 100).toFixed(0);
+  document.getElementById('outCA20').innerText = massCA20_design.toFixed(1);
+  document.getElementById('outCA20Field').innerText = massCA20_field.toFixed(1);
+  document.getElementById('rateCA20').innerText = rCA20.toFixed(2);
+  document.getElementById('costCA20Total').innerText = cCA20.toFixed(2);
+
+  document.getElementById('outRatio10').innerText = (ratio10 * 100).toFixed(0);
+  document.getElementById('outCA10').innerText = massCA10_design.toFixed(1);
+  document.getElementById('outCA10Field').innerText = massCA10_field.toFixed(1);
+  document.getElementById('rateCA10').innerText = rCA10.toFixed(2);
+  document.getElementById('costCA10Total').innerText = cCA10.toFixed(2);
+  
   document.getElementById('outAdmix').innerText = admixMass.toFixed(2);
+  document.getElementById('outAdmixField').innerText = admixMass.toFixed(2);
+  document.getElementById('rateAdmix').innerText = rAdmix.toFixed(2);
+  document.getElementById('costAdmixTotal').innerText = cAdmix.toFixed(2);
 
-  // Ratios relative to total binder
-  document.getElementById('ratioCement').innerText = (massCement / totalBinder).toFixed(2);
-  document.getElementById('ratioSCM').innerText = (massSCM / totalBinder).toFixed(2);
-  document.getElementById('ratioWater').innerText = (finalWater / totalBinder).toFixed(2);
-  document.getElementById('ratioFA').innerText = (massFA / totalBinder).toFixed(2);
-  document.getElementById('ratioCA').innerText = (massCA / totalBinder).toFixed(2);
-  document.getElementById('ratioAdmix').innerText = (admixMass / totalBinder).toFixed(4);
+  // Total Summary
+  document.getElementById('outTotalCost').innerText = totalCost.toFixed(2);
+  document.getElementById('outBinderCostPct').innerText = binderCostPct;
+  document.getElementById('outAggCostPct').innerText = aggCostPct;
+  document.getElementById('outAdmixCostPct').innerText = admixCostPct;
 
-  // SCM Row Display Control
+  // Mechanical Outputs
+  document.getElementById('outFlexural').innerText = flexuralStr.toFixed(2) + " N/mm²";
+  document.getElementById('outModulus').innerText = Math.round(elasticModulus).toLocaleString() + " MPa";
+  document.getElementById('outTensile').innerText = splitTensile.toFixed(2) + " N/mm²";
+  document.getElementById('outDensity').innerText = Math.round(totalSSD) + " kg/m³";
+  document.getElementById('outYield').innerText = concreteYield.toFixed(3) + " m³";
+  document.getElementById('outWorkability').innerText = workabilityStatus;
+
+  // SCM Row Display
   const scmRow = document.getElementById('scmRow');
   if (scmType === 'none') {
     scmRow.style.display = 'none';
