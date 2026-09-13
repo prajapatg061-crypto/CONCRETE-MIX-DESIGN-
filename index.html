@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Advanced Concrete Mix Design & Rate Analysis Calculator</title>
+  <!-- Include SheetJS (XLSX) Library for seamless Excel export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background-color: #f1f5f9; margin: 0; padding: 20px; color: #1e293b; }
@@ -20,9 +22,17 @@
     input, select { padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.92rem; transition: border 0.2s; }
     input:focus, select:focus { outline: none; border-color: #2563eb; }
     
+    /* Trial Name Header Bracket styling */
+    .trial-header-box { background: #eff6ff; border: 2px solid #2563eb; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+    .trial-header-box label { color: #1e40af; font-size: 0.95rem; }
+    .trial-header-box input { font-size: 1.05rem; font-weight: 700; color: #1e3a8a; border-color: #93c5fd; background: #ffffff; }
+
     .btn-calc { margin-top: 30px; width: 100%; padding: 14px; background: #2563eb; color: #ffffff; border: none; font-size: 1.1rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
     .btn-calc:hover { background: #1d4ed8; }
     
+    .btn-excel { background: #15803d; color: white; border: none; padding: 12px 20px; margin-top: 15px; font-weight: 700; font-size: 0.95rem; border-radius: 6px; cursor: pointer; width: 100%; transition: background 0.2s; }
+    .btn-excel:hover { background: #166534; }
+
     .results-card { margin-top: 30px; background: #ffffff; border: 2px solid #2563eb; border-radius: 10px; padding: 25px; display: none; }
     .results-card h2 { color: #1e3a8a; margin-top: 0; font-size: 1.4rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
     
@@ -42,17 +52,28 @@
     .cost-card h3 { color: #065f46; margin-top: 0; margin-bottom: 10px; }
     .total-cost { font-size: 1.6rem; font-weight: 800; color: #047857; margin: 10px 0; }
     
-    .print-btn { background: #059669; color: white; border: none; padding: 10px 18px; margin-top: 25px; font-weight: 600; border-radius: 6px; cursor: pointer; }
+    .button-group { display: flex; gap: 15px; margin-top: 25px; }
+    .print-btn { background: #059669; color: white; border: none; padding: 12px 18px; font-weight: 600; border-radius: 6px; cursor: pointer; flex: 1; }
     .print-btn:hover { background: #047857; }
+    
+    .status-badge { display: inline-block; background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 20px; font-size: 0.82rem; font-weight: bold; margin-left: 10px; }
   </style>
 </head>
 <body>
 
 <div class="app-container">
   <h1>Concrete Mix Design & Rate Analysis</h1>
-  <p class="subtitle">IS 10262:2019 Compliant | 20mm & 10mm Blending | Field Corrections | Real-Time Cost Analysis</p>
+  <p class="subtitle">IS 10262:2019 Compliant | 20mm & 10mm Blending | Field Corrections | Real-Time Cost & Excel Logging</p>
 
   <form id="mixForm">
+    <!-- TOP BRACKET: TRIAL NAME / IDENTIFIER -->
+    <div class="trial-header-box">
+      <div class="field">
+        <label for="trialName">[ TOP SIDE TRIAL BRACKET ] - Mix Trial Identifier / Batch Name:</label>
+        <input type="text" id="trialName" value="Trial Run 01" placeholder="e.g. Trial 1 - High Slump M30 with FlyAsh">
+      </div>
+    </div>
+
     <!-- SECTION 1: SPECIFICATIONS -->
     <div class="section-title">1. Structural & Exposure Specifications</div>
     <div class="form-grid">
@@ -211,12 +232,15 @@
       </div>
     </div>
 
-    <button type="button" class="btn-calc" onclick="calculateMixProportions()">Calculate Proportions, Properties & Rate Analysis</button>
+    <button type="button" class="btn-calc" onclick="calculateMixProportions()">Calculate & Auto-Save Trial to Excel Database</button>
   </form>
 
   <!-- RESULTS SECTION -->
   <div id="resultsCard" class="results-card">
-    <h2>Design Mix Proportions & Cost Profile (per 1 m³)</h2>
+    <h2>
+      <span id="outHeaderTrialName">Trial Details</span>
+      <span class="status-badge" id="savedStatus">Auto-Saved to Log</span>
+    </h2>
     <p style="margin-bottom: 20px;">
       <strong>Target Mean Strength (f'ck):</strong> <span id="outTargetStrength"></span> N/mm² &nbsp;|&nbsp; 
       <strong>Adopted w/b Ratio:</strong> <span id="outWC"></span>
@@ -331,11 +355,18 @@
       </div>
     </div>
 
-    <button class="print-btn" onclick="window.print()">Print Cost Sheet / Save PDF</button>
+    <!-- EXPORT & PRINT BUTTONS -->
+    <button type="button" class="btn-excel" onclick="downloadExcelLog()">Download All Saved Trials to Excel (.xlsx)</button>
+    <div class="button-group">
+      <button type="button" class="print-btn" onclick="window.print()">Print Cost Sheet / Save PDF</button>
+    </div>
   </div>
 </div>
 
 <script>
+// Array to automatically store multi-trial calculations
+let trialDatabase = [];
+
 function syncAggregateRatios(changed) {
   const ca20 = document.getElementById('caRatio20');
   const ca10 = document.getElementById('caRatio10');
@@ -364,6 +395,8 @@ function updateScmDefaults() {
 }
 
 function calculateMixProportions() {
+  const trialName = document.getElementById('trialName').value || "Unnamed Trial";
+  
   // Inputs
   const fck = parseFloat(document.getElementById('grade').value);
   const slump = parseFloat(document.getElementById('slump').value);
@@ -482,6 +515,7 @@ function calculateMixProportions() {
   else if (slump >= 150) workabilityStatus = "Very High (Pumpable)";
 
   // UI Output
+  document.getElementById('outHeaderTrialName').innerText = trialName;
   document.getElementById('outTargetStrength').innerText = f_prime_ck.toFixed(2);
   document.getElementById('outWC').innerText = wbRatio.toFixed(2);
   
@@ -546,6 +580,48 @@ function calculateMixProportions() {
   }
 
   document.getElementById('resultsCard').style.display = 'block';
+
+  // --- EXCEL RECORD RECORDING LOGIC ---
+  const currentTimestamp = new Date().toLocaleString();
+  const trialRecord = {
+    "Timestamp": currentTimestamp,
+    "Trial Name": trialName,
+    "Grade": "M" + fck,
+    "Target Mean Str (MPa)": f_prime_ck.toFixed(2),
+    "Slump (mm)": slump,
+    "W/B Ratio": wbRatio.toFixed(2),
+    "Cement SSD (kg)": massCement.toFixed(1),
+    "SCM SSD (kg)": massSCM.toFixed(1),
+    "Water Field (kg)": finalWater_field.toFixed(1),
+    "Sand Field (kg)": massFA_field.toFixed(1),
+    "CA 20mm Field (kg)": massCA20_field.toFixed(1),
+    "CA 10mm Field (kg)": massCA10_field.toFixed(1),
+    "Admix (kg)": admixMass.toFixed(2),
+    "Total Density (kg/m3)": Math.round(totalSSD),
+    "Flexural Str (MPa)": flexuralStr.toFixed(2),
+    "Modulus Ec (MPa)": Math.round(elasticModulus),
+    "Total Cost (₹/m3)": totalCost.toFixed(2)
+  };
+
+  trialDatabase.push(trialRecord);
+}
+
+// Function to compile and download all recorded trials as an Excel Sheet (.xlsx)
+function downloadExcelLog() {
+  if (trialDatabase.length === 0) {
+    alert("No trials recorded yet. Please click 'Calculate' to generate trial data first.");
+    return;
+  }
+
+  const worksheet = XLSX.utils.json_to_sheet(trialDatabase);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Concrete Mix Trials");
+
+  // Auto-fit column width helper
+  const max_width = trialDatabase.reduce((w, r) => Math.max(w, r["Trial Name"].length), 10);
+  worksheet["!cols"] = [ { wch: 20 }, { wch: max_width + 5 } ];
+
+  XLSX.writeFile(workbook, "Concrete_Mix_Design_Trials_Log.xlsx");
 }
 </script>
 
