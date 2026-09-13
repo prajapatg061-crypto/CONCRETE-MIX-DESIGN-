@@ -9,7 +9,7 @@
   <style>
     * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
     body { background-color: #f0f4f8; margin: 0; padding: 20px; }
-    .app-container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .app-container { max-width: 1000px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
     
     h1 { color: #1e3a8a; text-align: center; margin-bottom: 5px; }
     p.subtitle { text-align: center; color: #64748b; margin-bottom: 30px; }
@@ -179,8 +179,13 @@
           <td id="ratioFA">--</td>
         </tr>
         <tr>
-          <td>Coarse Aggregate</td>
-          <td id="outCA">--</td>
+          <td>Coarse Aggregate 20mm</td>
+          <td id="outCA 20mm">--</td>
+          <td id="ratioCA">--</td>
+        </tr>
+        <tr>
+          <td>Coarse Aggregate 10mm</td>
+          <td id="outCA 10mm">--</td>
           <td id="ratioCA">--</td>
         </tr>
         <tr>
@@ -233,7 +238,7 @@ function calculateMixProportions() {
 
   // 5. Step 4: Calculation of Water Content
    // Stardard recommended GGBS content replaced upto 70% of cement content
-  let GGBScontent = 70;
+  let GGBScontent = 70%;
   if (cementcontent >= 100) GGBScontent = upto 70% of cementcontent
   
   // 6. Step 5: Calculation of Water Content
