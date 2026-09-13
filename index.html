@@ -107,11 +107,11 @@
         <input type="number" step="0.01" id="GGBS" value="2.90">
       </div>
       <div class="field">
-        <label for="sgCA 20mm">Coarse Aggregate (CA):</label>
+        <label for="sgCA 20mm">Coarse Aggregate (CA) 20mm:</label>
         <input type="number" step="0.01" id="sgCA" value="2.74">
       </div>
       <div class="field">
-        <label for="sgCA 10mm">Coarse Aggregate (CA):</label>
+        <label for="sgCA 10mm">Coarse Aggregate (CA) 10mm:</label>
         <input type="number" step="0.01" id="sgCA" value="2.70">
       </div>
       <div class="field">
@@ -275,7 +275,7 @@ function calculateMixProportions() {
   // Mass of aggregates
   let massCA = volAllAgg * volCA_fraction * sgCA * 1000;
   let massCA20mm = massCA * 0.6;
-  let massCA10mm = massCA - massCA20mm
+  let massCA10mm = massCA - massCA20mm;
   let massFA = volAllAgg * volFA_fraction * sgFA * 1000;
 
   // 8. Output Results to the HTML Page
