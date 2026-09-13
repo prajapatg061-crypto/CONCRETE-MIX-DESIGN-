@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Concrete Mix Design Calculator (IS 10262:2019)</title>
+  
+  <!-- CSS Styling: Makes the app look clean and modern -->
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background-color: #f0f4f8; margin: 0; padding: 20px; }
+    .app-container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    
+    h1 { color: #1e3a8a; text-align: center; margin-bottom: 5px; }
+    p.subtitle { text-align: center; color: #64748b; margin-bottom: 30px; }
+    
+    .section-title { background: #e2e8f0; padding: 8px 12px; font-weight: bold; color: #334155; border-radius: 6px; margin-top: 20px; }
+    
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
+    .field { display: flex; flex-direction: column; }
+    label { font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 5px; }
+    input, select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; }
+    
+    .btn-calc { margin-top: 30px; width: 100%; padding: 14px; background: #2563eb; color: white; border: none; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; }
+    .btn-calc:hover { background: #1d4ed8; }
+    
+    .results-card { margin-top: 30px; background: #f8fafc; border: 2px solid #2563eb; border-radius: 10px; padding: 20px; display: none; }
+    .results-card h2 { color: #1e3a8a; margin-top: 0; }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
+    th, td { border: 1px solid #cbd5e1; padding: 12px; text-align: left; }
+    th { background: #2563eb; color: white; }
+    tr:nth-child(even) { background: #f1f5f9; }
+    
+    .print-btn { background: #059669; color: white; border: none; padding: 10px 15px; margin-top: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; }
+    .print-btn:hover { background: #047857; }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <h1>Concrete Mix Design Calculator</h1>
+  <p class="subtitle">Based on IS 10262:2019 & IS 456:2000</p>
+
+  <form id="mixForm">
+    <!-- SECTION 1: CONCRETE SPECIFICATIONS -->
+    <div class="section-title">1. Concrete Specifications</div>
+    <div class="form-grid">
+      <div class="field">
+        <label for="grade">Concrete Grade (fck):</label>
+        <select id="grade">
+          <option value="20">M20</option>
+          <option value="25">M25</option>
+          <option value="30" selected>M30</option>
+          <option value="35">M35</option>
+          <option value="40">M40</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="slump">Required Slump (mm):</label>
+        <input type="number" id="slump" value="100">
+      </div>
+      <div class="field">
+        <label for="msa">Max Aggregate Size (MSA):</label>
+        <select id="msa">
+          <option value="10">10 mm</option>
+          <option value="20" selected>20 mm</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="exposure">Exposure Condition:</label>
+        <select id="exposure">
+          <option value="0.55">Mild (w/c ≤ 0.55)</option>
+          <option value="0.50">Moderate (w/c ≤ 0.50)</option>
+          <option value="0.45" selected>Severe (w/c ≤ 0.45)</option>
+          <option value="0.40">Very Severe (w/c ≤ 0.40)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- SECTION 2: MATERIAL SPECIFIC GRAVITIES -->
+    <div class="section-title">2. Material Specific Gravities</div>
+    <div class="form-grid">
+      <div class="field">
+        <label for="sgCement">Cement (OPC):</label>
+        <input type="number" step="0.01" id="sgCement" value="3.15">
+      </div>
+      <div class="field">
+        <label for="sgCA">Coarse Aggregate (CA):</label>
+        <input type="number" step="0.01" id="sgCA" value="2.74">
+      </div>
+      <div class="field">
+        <label for="sgFA">Fine Aggregate (FA / M-Sand):</label>
+        <input type="number" step="0.01" id="sgFA" value="2.65">
+      </div>
+      <div class="field">
+        <label for="zone">Sand Grading Zone:</label>
+        <select id="zone">
+          <option value="1">Zone I</option>
+          <option value="2" selected>Zone II</option>
+          <option value="3">Zone III</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- SECTION 3: CHEMICAL ADMIXTURE -->
+    <div class="section-title">3. Chemical Admixture (Superplasticizer)</div>
+    <div class="form-grid">
+      <div class="field">
+        <label for="waterRed">Water Reduction (%):</label>
+        <input type="number" id="waterRed" value="20">
+      </div>
+      <div class="field">
+        <label for="admixDosage">Admixture Dosage (% of cement):</label>
+        <input type="number" step="0.1" id="admixDosage" value="0.8">
+      </div>
+      <div class="field">
+        <label for="sgAdmix">Admixture Specific Gravity:</label>
+        <input type="number" step="0.01" id="sgAdmix" value="1.12">
+      </div>
+    </div>
+
+    <button type="button" class="btn-calc" onclick="calculateMixProportions()">Calculate Batch Weights</button>
+  </form>
+
+  <!-- RESULTS DISPLAY AREA -->
+  <div id="resultsCard" class="results-card">
+    <h2>Design Mix Proportions (per 1 m³)</h2>
+    <p><strong>Target Mean Strength (f'ck):</strong> <span id="outTargetStrength"></span> N/mm²</p>
+    <p><strong>Adopted w/c Ratio:</strong> <span id="outWC"></span></p>
+    
+    <table>
+      <thead>
+        <tr>
+          <th>Material</th>
+          <th>Quantity per 1 m³ (kg)</th>
+          <th>Ratio (Relative to Cement)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Cement</td>
+          <td id="outCement">--</td>
+          <td>1.00</td>
+        </tr>
+        <tr>
+          <td>Water</td>
+          <td id="outWater">--</td>
+          <td id="ratioWater">--</td>
+        </tr>
+        <tr>
+          <td>Fine Aggregate (Sand)</td>
+          <td id="outFA">--</td>
+          <td id="ratioFA">--</td>
+        </tr>
+        <tr>
+          <td>Coarse Aggregate</td>
+          <td id="outCA">--</td>
+          <td id="ratioCA">--</td>
+        </tr>
+        <tr>
+          <td>Chemical Admixture</td>
+          <td id="outAdmix">--</td>
+          <td id="ratioAdmix">--</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <button class="print-btn" onclick="window.print()">Print / Save PDF Report</button>
+  </div>
+</div>
+
+<!-- JAVASCRIPT LOGIC ENGINE -->
+<script>
+function calculateMixProportions() {
+  // 1. Read values from input fields
+  const fck = parseFloat(document.getElementById('grade').value);
+  const slump = parseFloat(document.getElementById('slump').value);
+  const msa = document.getElementById('msa').value;
+  const maxWC = parseFloat(document.getElementById('exposure').value);
+  
+  const sgCement = parseFloat(document.getElementById('sgCement').value);
+  const sgCA = parseFloat(document.getElementById('sgCA').value);
+  const sgFA = parseFloat(document.getElementById('sgFA').value);
+  
+  const waterRed = parseFloat(document.getElementById('waterRed').value);
+  const admixDosage = parseFloat(document.getElementById('admixDosage').value);
+  const sgAdmix = parseFloat(document.getElementById('sgAdmix').value);
+
+  // 2. Step 1: Target Mean Strength (f'ck = fck + 1.65 * S)
+  let S = 4.0;
+  if (fck >= 30) S = 5.0;
+  const f_prime_ck = fck + (1.65 * S);
+
+  // 3. Step 2: Selection of w/c ratio
+  // Standard recommended w/c ratio based on strength curve or exposure limit
+  let wcRatio = 0.45;
+  if (fck >= 40) wcRatio = 0.40;
+  if (wcRatio > maxWC) wcRatio = maxWC; // Check exposure limit
+
+  // 4. Step 3: Calculation of Water Content
+  // Base water for 50mm slump: 20mm aggregate = 186 L, 10mm aggregate = 208 L
+  let baseWater = (msa === "20") ? 186 : 208;
+  
+  // Slump adjustment: +3% for every 25mm above 50mm
+  let extraSlump = slump - 50;
+  let adjustedWater = baseWater + (baseWater * (extraSlump / 25) * 0.03);
+  
+  // Superplasticizer reduction
+  let finalWater = adjustedWater * (1 - (waterRed / 100));
+
+  // 5. Step 4: Calculation of Cement Content
+  let cementContent = finalWater / wcRatio;
+  if (cementContent < 320) cementContent = 320; // Minimum cement content check per IS 456
+
+  // 6. Step 5: Proportions of Coarse and Fine Aggregates
+  // For 20mm aggregate in Zone II, base Coarse Aggregate volume is ~62% (0.62)
+  let volCA_fraction = 0.62;
+  let volFA_fraction = 1.0 - volCA_fraction;
+
+  // 7. Step 6: Volumetric Calculations (per 1 m³)
+  let volAir = 0.01; // 1% entrapped air
+  let volCement = cementContent / (sgCement * 1000);
+  let volWater = finalWater / 1000;
+  
+  let admixMass = (cementContent * admixDosage) / 100;
+  let volAdmix = admixMass / (sgAdmix * 1000);
+
+  // Remaining volume for aggregates
+  let volAllAgg = 1.0 - (volAir + volCement + volWater + volAdmix);
+
+  // Mass of aggregates
+  let massCA = volAllAgg * volCA_fraction * sgCA * 1000;
+  let massFA = volAllAgg * volFA_fraction * sgFA * 1000;
+
+  // 8. Output Results to the HTML Page
+  document.getElementById('outTargetStrength').innerText = f_prime_ck.toFixed(2);
+  document.getElementById('outWC').innerText = wcRatio.toFixed(2);
+  
+  document.getElementById('outCement').innerText = cementContent.toFixed(1);
+  document.getElementById('outWater').innerText = finalWater.toFixed(1);
+  document.getElementById('outFA').innerText = massFA.toFixed(1);
+  document.getElementById('outCA').innerText = massCA.toFixed(1);
+  document.getElementById('outAdmix').innerText = admixMass.toFixed(2);
+
+  // Proportional Ratios (1 : FA/Cement : CA/Cement)
+  document.getElementById('ratioWater').innerText = (finalWater / cementContent).toFixed(2);
+  document.getElementById('ratioFA').innerText = (massFA / cementContent).toFixed(2);
+  document.getElementById('ratioCA').innerText = (massCA / cementContent).toFixed(2);
+  document.getElementById('ratioAdmix').innerText = (admixMass / cementContent).toFixed(4);
+
+  // Show the hidden results card
+  document.getElementById('resultsCard').style.display = 'block';
+}
+</script>
+
+</body>
+</html>
