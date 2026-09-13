@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Reverse Concrete Mix Calculator - Strength, Density & Yield Estimator</title>
+  <meta name="title" content="Reverse Concrete Mix Calculator - Strength, Density & Yield Estimator">
+  <meta name="description" content="Audit existing concrete mix proportions. Input raw material batch weights to estimate characteristic strength (fck), slump, wet density, volumetric yield, and unit rate analysis per m3.">
+  <meta name="keywords" content="reverse concrete mix design, concrete yield calculator, fck estimator, batch weight audit, concrete density calculator, rate analysis">
+  <meta name="author" content="Concrete Mix Design Tool">
+
+  <link rel="canonical" href="https://example.com/reverse-concrete-mix-calculator">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://example.com/reverse-concrete-mix-calculator">
+  <meta property="og:title" content="Reverse Concrete Mix Calculator - Yield & Strength Analysis">
+  <meta property="og:description" content="Convert material batch quantities directly into expected concrete strength, slump, density, yield, and overall cost per m3.">
+
+  <!-- JSON-LD Structured Data: SoftwareApplication -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Reverse Concrete Mix Calculator",
+    "operatingSystem": "All",
+    "applicationCategory": "EducationalApplication",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "INR"
+    },
+    "description": "An interactive tool for auditing concrete mixes by converting actual batched weights into concrete density, yield, estimated characteristic strength (fck), slump, and rate analysis."
+  }
+  </script>
+
+  <!-- SheetJS (XLSX) Library for Excel Export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f1f5f9; margin: 0; padding: 20px; color: #1e293b; }
+    .app-container { max-width: 1050px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+    
+    h1 { color: #0f172a; text-align: center; margin-bottom: 5px; font-size: 1.8rem; }
+    p.subtitle { text-align: center; color: #64748b; margin-bottom: 25px; font-size: 0.95rem; }
+    
+    .section-title { background: #e2e8f0; padding: 10px 14px; font-weight: 700; color: #334155; border-radius: 6px; margin-top: 25px; font-size: 1rem; }
+    
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 15px; margin-top: 15px; }
+    .field { display: flex; flex-direction: column; }
+    label { font-size: 0.82rem; font-weight: 600; color: #475569; margin-bottom: 6px; }
+    input, select { padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.92rem; transition: border 0.2s; }
+    input:focus, select:focus { outline: none; border-color: #2563eb; }
+    
+    .trial-header-box { background: #f0fdf4; border: 2px solid #16a34a; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+    .trial-header-box label { color: #15803d; font-size: 0.95rem; }
+    .trial-header-box input { font-size: 1.05rem; font-weight: 700; color: #14532d; border-color: #86efac; background: #ffffff; }
+
+    .btn-calc { margin-top: 30px; width: 100%; padding: 14px; background: #16a34a; color: #ffffff; border: none; font-size: 1.1rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+    .btn-calc:hover { background: #15803d; }
+    
+    .btn-excel { background: #0284c7; color: white; border: none; padding: 12px 20px; margin-top: 15px; font-weight: 700; font-size: 0.95rem; border-radius: 6px; cursor: pointer; width: 100%; transition: background 0.2s; }
+    .btn-excel:hover { background: #0369a1; }
+
+    .results-card { margin-top: 30px; background: #ffffff; border: 2px solid #16a34a; border-radius: 10px; padding: 25px; display: none; }
+    .results-card h2 { color: #14532d; margin-top: 0; font-size: 1.4rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #ffffff; }
+    th, td { border: 1px solid #cbd5e1; padding: 10px 12px; text-align: left; font-size: 0.9rem; }
+    th { background: #16a34a; color: #ffffff; font-weight: 600; }
+    tr:nth-child(even) { background: #f8fafc; }
+    .highlight-cell { background-color: #f0fdf4; font-weight: bold; color: #15803d; }
+    
+    .prop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
+    .prop-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; }
+    .prop-box h4 { margin: 0 0 8px 0; color: #0f172a; font-size: 0.95rem; }
+    .prop-value { font-size: 1.3rem; font-weight: 700; color: #16a34a; margin: 4px 0; }
+    .prop-desc { font-size: 0.78rem; color: #64748b; margin: 0; }
+
+    .cost-card { background: #ecfdf5; border: 1.5px solid #10b981; border-radius: 8px; padding: 20px; margin-top: 25px; }
+    .cost-card h3 { color: #065f46; margin-top: 0; margin-bottom: 10px; }
+    .total-cost { font-size: 1.6rem; font-weight: 800; color: #047857; margin: 10px 0; }
+    
+    .button-group { display: flex; gap: 15px; margin-top: 25px; }
+    .print-btn { background: #059669; color: white; border: none; padding: 12px 18px; font-weight: 600; border-radius: 6px; cursor: pointer; flex: 1; }
+    .print-btn:hover { background: #047857; }
+    
+    .status-badge { display: inline-block; background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 20px; font-size: 0.82rem; font-weight: bold; margin-left: 10px; }
+
+    .info-section { margin-top: 45px; border-top: 2px solid #e2e8f0; padding-top: 25px; }
+    .info-section h2 { color: #0f172a; font-size: 1.35rem; margin-bottom: 12px; }
+    .info-section h3 { color: #16a34a; font-size: 1.05rem; margin-top: 18px; margin-bottom: 8px; }
+    .info-section p { font-size: 0.92rem; line-height: 1.6; color: #475569; margin-bottom: 12px; }
+    .faq-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px 16px; margin-bottom: 12px; }
+    .faq-item h4 { margin: 0 0 6px 0; font-size: 0.95rem; color: #1e293b; }
+    .faq-item p { margin: 0; font-size: 0.88rem; color: #64748b; }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <h1>Reverse Concrete Mix Design & Performance Audit</h1>
+  <p class="subtitle">Input Batch Quantities to Calculate Yield, Density, Estimated Strength (fck), Slump & Cost per m³</p>
+
+  <form id="reverseMixForm">
+    <!-- TOP BRACKET: TRIAL NAME / IDENTIFIER -->
+    <div class="trial-header-box">
+      <div class="field">
+        <label for="trialName">[ TOP SIDE TRIAL BRACKET ] - Reverse Mix Trial / Verification ID:</label>
+        <input type="text" id="trialName" value="Reverse Audit 01" placeholder="e.g. Audit Trial - Batching Plant Check M30">
+      </div>
+    </div>
+
+    <!-- SECTION 1: MATERIAL BATCH WEIGHTS INPUT (Kg) -->
+    <div class="section-title">1. Input Actual Batch Weights (per target mix/batch)</div>
+    <div class="form-grid">
+      <div class="field">
+        <label for="wCement">OPC Cement Weight (kg):</label>
+        <input type="number" step="0.1" id="wCement" value="330">
+      </div>
+      <div class="field">
+        <label for="scmType">Mineral Admixture Type:</label>
+        <select id="scmType">
+          <option value="none">None (0% Replacement)</option>
+          <option value="flyash" selected>Fly Ash (PFA)</option>
+          <option value="ggbs">GGBS (Slag)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="wSCM">SCM Weight (kg):</label>
+        <input type="number" step="0.1" id="wSCM" value="110">
+      </div>
+      <div class="field">
+        <label for="wWater">Net Batched Water (kg or Litres):</label>
+        <input type="number" step="0.1" id="wWater" value="175">
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label for="wFA">Fine Aggregate / Sand (kg):</label>
+        <input type="number" step="0.1" id="wFA" value="750">
+      </div>
+      <div class="field">
+        <label for="wCA20">20mm Coarse Aggregate (kg):</label>
+        <input type="number" step="0.1" id="wCA20" value="680">
+      </div>
+      <div class="field">
+        <label for="wCA10">10mm Coarse Aggregate (kg):</label>
+        <input type="number" step="0.1" id="wCA10" value="450">
+      </div>
+      <div class="field">
+        <label for="wAdmix">Chemical Admixture Dosage (kg):</label>
+        <input type="number" step="0.01" id="wAdmix" value="3.52">
+      </div>
+    </div>
+
+    <!-- SECTION 2: PHYSICAL PROPERTIES & DENSITIES -->
+    <div class="section-title">2. Material Physical Properties (Specific Gravity & Entrained Air)</div>
+    <div class="form-grid">
+      <div class="field">
+        <label for="sgCement">Cement Sp. Gr.:</label>
+        <input type="number" step="0.01" id="sgCement" value="3.15">
+      </div>
+      <div class="field">
+        <label for="sgSCM">SCM Sp. Gr.:</label>
+        <input type="number" step="0.01" id="sgSCM" value="2.20">
+      </div>
+      <div class="field">
+        <label for="sgFA">Sand / FA Sp. Gr.:</label>
+        <input type="number" step="0.01" id="sgFA" value="2.65">
+      </div>
+      <div class="field">
+        <label for="sgCA20">20mm Agg. Sp. Gr.:</label>
+        <input type="number" step="0.01" id="sgCA20" value="2.74">
+      </div>
+      <div class="field">
+        <label for="sgCA10">10mm Agg. Sp. Gr.:</label>
+        <input type="number" step="0.01" id="sgCA10" value="2.72">
+      </div>
+      <div class="field">
+        <label for="sgAdmix">Admixture Sp. Gr.:</label>
+        <input type="number" step="0.01" id="sgAdmix" value="1.08">
+      </div>
+      <div class="field">
+        <label for="airContent">Entrained Air (% Volume):</label>
+        <input type="number" step="0.1" id="airContent" value="1.0">
+      </div>
+      <div class="field">
+        <label for="admixEfficiency">PCE Water Reduction (%):</label>
+        <input type="number" id="admixEfficiency" value="20">
+      </div>
+    </div>
+
+    <!-- SECTION 3: MATERIAL UNIT RATES -->
+    <div class="section-title">3. Unit Rates for Cost Estimation</div>
+    <div class="form-grid">
+      <div class="field">
+        <label for="costCement">Cement Rate (₹/kg):</label>
+        <input type="number" step="0.1" id="costCement" value="7.0">
+      </div>
+      <div class="field">
+        <label for="costSCM">Fly Ash / SCM Rate (₹/kg):</label>
+        <input type="number" step="0.1" id="costSCM" value="2.5">
+      </div>
+      <div class="field">
+        <label for="costWater">Water Rate (₹/Litre):</label>
+        <input type="number" step="0.01" id="costWater" value="0.05">
+      </div>
+      <div class="field">
+        <label for="costFA">Sand / FA Rate (₹/kg):</label>
+        <input type="number" step="0.05" id="costFA" value="1.20">
+      </div>
+      <div class="field">
+        <label for="costCA20">20mm Aggregate Rate (₹/kg):</label>
+        <input type="number" step="0.05" id="costCA20" value="0.95">
+      </div>
+      <div class="field">
+        <label for="costCA10">10mm Aggregate Rate (₹/kg):</label>
+        <input type="number" step="0.05" id="costCA10" value="1.05">
+      </div>
+      <div class="field">
+        <label for="costAdmix">Admixture Rate (₹/kg):</label>
+        <input type="number" step="1" id="costAdmix" value="85">
+      </div>
+    </div>
+
+    <button type="button" class="btn-calc" onclick="calculateReverseMix()">Run Reverse Calculation & Auto-Save Trial to Excel</button>
+  </form>
+
+  <!-- RESULTS CARD -->
+  <div id="resultsCard" class="results-card">
+    <h2>
+      <span id="outHeaderTrialName">Trial Audit Details</span>
+      <span class="status-badge" id="savedStatus">Auto-Saved to Excel Log</span>
+    </h2>
+
+    <!-- MECHANICAL & FRESH CONCRETE PERFORMANCE GRID -->
+    <h3 style="color: #15803d; margin-top: 15px;">Predicted Concrete Performance & Physical Indicators</h3>
+    <div class="prop-grid">
+      <div class="prop-box">
+        <h4>Volumetric Yield</h4>
+        <div class="prop-value" id="outYield">--</div>
+        <p class="prop-desc">Actual concrete volume produced</p>
+      </div>
+      <div class="prop-box">
+        <h4>Fresh Wet Density</h4>
+        <div class="prop-value" id="outDensity">--</div>
+        <p class="prop-desc">Wet mass per cubic meter (kg/m³)</p>
+      </div>
+      <div class="prop-box">
+        <h4>Char. Strength (fck)</h4>
+        <div class="prop-value" id="outFck">--</div>
+        <p class="prop-desc">Estimated 28-day cube strength</p>
+      </div>
+      <div class="prop-box">
+        <h4>Target Mean Str. (f'ck)</h4>
+        <div class="prop-value" id="outFckMean">--</div>
+        <p class="prop-desc">Predicted mean 28-day strength</p>
+      </div>
+      <div class="prop-box">
+        <h4>Estimated Slump / Flow</h4>
+        <div class="prop-value" id="outSlump">--</div>
+        <p class="prop-desc">Workability prediction (mm)</p>
+      </div>
+      <div class="prop-box">
+        <h4>Water / Binder Ratio</h4>
+        <div class="prop-value" id="outWB">--</div>
+        <p class="prop-desc">Effective w/b mass ratio</p>
+      </div>
+    </div>
+
+    <!-- STANDARDIZED PROPORTIONS TABLE (NORMALIZED TO 1 m³) -->
+    <h3 style="color: #15803d; margin-top: 25px;">Normalized Concrete Batch Quantities per 1.0 m³</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Material Component</th>
+          <th>Input Batch Mass (kg)</th>
+          <th>Normalized Mass (kg/m³)</th>
+          <th>Unit Rate (₹/kg)</th>
+          <th>Total Cost per m³ (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>OPC Cement</td>
+          <td id="outCementInput">--</td>
+          <td id="outCementNorm" class="highlight-cell">--</td>
+          <td id="rateCement">--</td>
+          <td id="costCementTotal">--</td>
+        </tr>
+        <tr id="scmRow">
+          <td>SCM (<span id="outScmName">Fly Ash</span>)</td>
+          <td id="outSCMInput">--</td>
+          <td id="outSCMNorm" class="highlight-cell">--</td>
+          <td id="rateSCM">--</td>
+          <td id="costSCMTotal">--</td>
+        </tr>
+        <tr>
+          <td>Net Water</td>
+          <td id="outWaterInput">--</td>
+          <td id="outWaterNorm" class="highlight-cell">--</td>
+          <td id="rateWater">--</td>
+          <td id="costWaterTotal">--</td>
+        </tr>
+        <tr>
+          <td>Fine Aggregate (Sand)</td>
+          <td id="outFAInput">--</td>
+          <td id="outFANorm" class="highlight-cell">--</td>
+          <td id="rateFA">--</td>
+          <td id="costFATotal">--</td>
+        </tr>
+        <tr>
+          <td>Coarse Aggregate 20 mm</td>
+          <td id="outCA20Input">--</td>
+          <td id="outCA20Norm" class="highlight-cell">--</td>
+          <td id="rateCA20">--</td>
+          <td id="costCA20Total">--</td>
+        </tr>
+        <tr>
+          <td>Coarse Aggregate 10 mm</td>
+          <td id="outCA10Input">--</td>
+          <td id="outCA10Norm" class="highlight-cell">--</td>
+          <td id="rateCA10">--</td>
+          <td id="costCA10Total">--</td>
+        </tr>
+        <tr>
+          <td>Chemical Admixture</td>
+          <td id="outAdmixInput">--</td>
+          <td id="outAdmixNorm" class="highlight-cell">--</td>
+          <td id="rateAdmix">--</td>
+          <td id="costAdmixTotal">--</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- RATE ANALYSIS SUMMARY CARD -->
+    <div class="cost-card">
+      <h3>Cost & Rate Analysis Breakdown</h3>
+      <div class="total-cost">Total Direct Concrete Cost: ₹ <span id="outTotalCost">0.00</span> / m³</div>
+      <p style="margin: 0; font-size: 0.88rem; color: #047857;">
+        Cementitious Share: <strong><span id="outBinderCostPct">0</span>%</strong> | 
+        Aggregates Share: <strong><span id="outAggCostPct">0</span>%</strong> | 
+        Admixture Share: <strong><span id="outAdmixCostPct">0</span>%</strong>
+      </p>
+    </div>
+
+    <!-- EXPORT & PRINT BUTTONS -->
+    <button type="button" class="btn-excel" onclick="downloadExcelLog()">Download All Saved Reverse Audits to Excel (.xlsx)</button>
+    <div class="button-group">
+      <button type="button" class="print-btn" onclick="window.print()">Print Audit Sheet / Save PDF</button>
+    </div>
+  </div>
+
+  <!-- EDUCATIONAL SECTION -->
+  <div class="info-section">
+    <h2>About Reverse Concrete Mix Analysis</h2>
+    <p>
+      The <strong>Reverse Concrete Mix Calculator</strong> allows engineers, trial lab technicians, and site managers to verify, audit, and estimate the expected properties of concrete from known or recorded batch weights. 
+    </p>
+    <p>
+      By taking batched weights as inputs, the system computes the total absolute volumetric yield, fresh wet density, and normalized material requirements per $m^3$. Using Abrams' water-binder relationship modified for supplementary cementitious materials (IS 10262:2019 principles), it projects the 28-day target mean strength ($f'_{ck}$) and characteristic strength ($f_{ck}$), as well as estimated slump.
+    </p>
+
+    <h3>Frequently Asked Questions (FAQ)</h3>
+    <div class="faq-item">
+      <h4>How is the characteristic strength (fck) estimated in reverse mode?</h4>
+      <p>The estimated 28-day target mean strength ($f'_{ck}$) is computed using an empirical W/B curve relationship ($f'_{ck} \approx 20 + 10 / (W/B)^{1.5}$ with SCM efficiency factors). Characteristic strength is derived by subtracting standard deviation margins ($f_{ck} = f'_{ck} - 1.65 \times S$).</p>
+    </div>
+    <div class="faq-item">
+      <h4>How is workability (slump/flow) derived from batched inputs?</h4>
+      <p>Slump estimation analyzes total available water, binder content, and PCE admixture dosage percentage relative to binder mass to forecast workability in millimeters.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// Global Database for Excel Export
+let trialDatabase = [];
+
+function calculateReverseMix() {
+  const trialName = document.getElementById('trialName').value || "Reverse Audit Trial";
+  
+  // 1. Material Weights Input (kg)
+  const wCement = parseFloat(document.getElementById('wCement').value || 0);
+  const scmType = document.getElementById('scmType').value;
+  const wSCM = scmType !== 'none' ? parseFloat(document.getElementById('wSCM').value || 0) : 0;
+  const wWater = parseFloat(document.getElementById('wWater').value || 0);
+  const wFA = parseFloat(document.getElementById('wFA').value || 0);
+  const wCA20 = parseFloat(document.getElementById('wCA20').value || 0);
+  const wCA10 = parseFloat(document.getElementById('wCA10').value || 0);
+  const wAdmix = parseFloat(document.getElementById('wAdmix').value || 0);
+
+  // 2. Specific Gravities & Parameters
+  const sgCement = parseFloat(document.getElementById('sgCement').value || 3.15);
+  const sgSCM = parseFloat(document.getElementById('sgSCM').value || 2.20);
+  const sgFA = parseFloat(document.getElementById('sgFA').value || 2.65);
+  const sgCA20 = parseFloat(document.getElementById('sgCA20').value || 2.74);
+  const sgCA10 = parseFloat(document.getElementById('sgCA10').value || 2.72);
+  const sgAdmix = parseFloat(document.getElementById('sgAdmix').value || 1.08);
+  const airPct = parseFloat(document.getElementById('airContent').value || 1.0) / 100;
+  const admixWaterRed = parseFloat(document.getElementById('admixEfficiency').value || 20);
+
+  // 3. Material Rates
+  const rCement = parseFloat(document.getElementById('costCement').value || 0);
+  const rSCM = parseFloat(document.getElementById('costSCM').value || 0);
+  const rWater = parseFloat(document.getElementById('costWater').value || 0);
+  const rFA = parseFloat(document.getElementById('costFA').value || 0);
+  const rCA20 = parseFloat(document.getElementById('costCA20').value || 0);
+  const rCA10 = parseFloat(document.getElementById('costCA10').value || 0);
+  const rAdmix = parseFloat(document.getElementById('costAdmix').value || 0);
+
+  // Total Mass of Inputs
+  const totalMassInput = wCement + wSCM + wWater + wFA + wCA20 + wCA10 + wAdmix;
+
+  // 4. Volumetric Calculations (m3)
+  const volCement = wCement / (sgCement * 1000);
+  const volSCM = wSCM > 0 ? wSCM / (sgSCM * 1000) : 0;
+  const volWater = wWater / 1000;
+  const volFA = wFA / (sgFA * 1000);
+  const volCA20 = wCA20 / (sgCA20 * 1000);
+  const volCA10 = wCA10 / (sgCA10 * 1000);
+  const volAdmix = wAdmix / (sgAdmix * 1000);
+
+  // Total Solid + Fluid Volume
+  const absoluteVolume = volCement + volSCM + volWater + volFA + volCA20 + volCA10 + volAdmix;
+  
+  // Total Volume including Air
+  const totalYield = absoluteVolume / (1.0 - airPct);
+
+  // 5. Calculate Fresh Wet Density (kg/m3)
+  const wetDensity = totalMassInput / totalYield;
+
+  // Normalized Weights per 1.0 m3
+  const normCement = wCement / totalYield;
+  const normSCM = wSCM / totalYield;
+  const normWater = wWater / totalYield;
+  const normFA = wFA / totalYield;
+  const normCA20 = wCA20 / totalYield;
+  const normCA10 = wCA10 / totalYield;
+  const normAdmix = wAdmix / totalYield;
+  const totalBinderNorm = normCement + normSCM;
+
+  // 6. Water-Binder Ratio & Strength (fck) Back-Calculation
+  const wbRatio = normWater / totalBinderNorm;
+  
+  // Effective W/B adjusting for Fly Ash/GGBS efficiency (Poitevin / IS 10262 approach)
+  let kFactor = scmType === 'flyash' ? 0.8 : (scmType === 'ggbs' ? 0.9 : 1.0);
+  let effectiveWB = normWater / (normCement + (kFactor * normSCM));
+
+  // Projected 28-day Target Mean Strength f'ck (N/mm2) via empirical Abram's relationship
+  let f_prime_ck = 12 + (13.5 / Math.pow(effectiveWB, 1.45));
+  
+  // Estimate Characteristic Strength fck = f'ck - 1.65*S
+  let S = f_prime_ck >= 35 ? 5.0 : 4.0;
+  let fck = f_prime_ck - (1.65 * S);
+  if (fck < 15) fck = 15;
+
+  // 7. Slump / Workability Estimation (mm)
+  // Base slump calculated from water per m3 and Admixture %
+  let baseWaterRequirement = 186 * (1 - (admixWaterRed / 100));
+  let waterRatio = normWater / baseWaterRequirement;
+  let admixPctOfBinder = (normAdmix / totalBinderNorm) * 100;
+
+  let estSlump = 50 + (waterRatio - 1.0) * 150 + (admixPctOfBinder * 35);
+  if (estSlump < 25) estSlump = 25;
+  if (estSlump > 220) estSlump = 220;
+
+  let slumpDisplay = Math.round(estSlump) + " mm";
+  if (estSlump >= 160) slumpDisplay += " (Self-Compacting / Flow)";
+
+  // 8. Cost Analysis
+  const cCement = normCement * rCement;
+  const cSCM = normSCM * rSCM;
+  const cWater = normWater * rWater;
+  const cFA = normFA * rFA;
+  const cCA20 = normCA20 * rCA20;
+  const cCA10 = normCA10 * rCA10;
+  const cAdmix = normAdmix * rAdmix;
+
+  const totalCost = cCement + cSCM + cWater + cFA + cCA20 + cCA10 + cAdmix;
+
+  const binderCostPct = (((cCement + cSCM) / totalCost) * 100).toFixed(1);
+  const aggCostPct = (((cFA + cCA20 + cCA10) / totalCost) * 100).toFixed(1);
+  const admixCostPct = ((cAdmix / totalCost) * 100).toFixed(1);
+
+  // Update UI Results
+  document.getElementById('outHeaderTrialName').innerText = trialName;
+  document.getElementById('outYield').innerText = totalYield.toFixed(3) + " m³";
+  document.getElementById('outDensity').innerText = Math.round(wetDensity) + " kg/m³";
+  document.getElementById('outFck').innerText = "M" + Math.round(fck) + " (" + fck.toFixed(1) + " N/mm²)";
+  document.getElementById('outFckMean').innerText = f_prime_ck.toFixed(1) + " N/mm²";
+  document.getElementById('outSlump').innerText = slumpDisplay;
+  document.getElementById('outWB').innerText = wbRatio.toFixed(2);
+
+  // Input & Normalized Table Values
+  document.getElementById('outCementInput').innerText = wCement.toFixed(1);
+  document.getElementById('outCementNorm').innerText = normCement.toFixed(1);
+  document.getElementById('rateCement').innerText = rCement.toFixed(2);
+  document.getElementById('costCementTotal').innerText = cCement.toFixed(2);
+
+  document.getElementById('outSCMInput').innerText = wSCM.toFixed(1);
+  document.getElementById('outSCMNorm').innerText = normSCM.toFixed(1);
+  document.getElementById('rateSCM').innerText = rSCM.toFixed(2);
+  document.getElementById('costSCMTotal').innerText = cSCM.toFixed(2);
+
+  document.getElementById('outWaterInput').innerText = wWater.toFixed(1);
+  document.getElementById('outWaterNorm').innerText = normWater.toFixed(1);
+  document.getElementById('rateWater').innerText = rWater.toFixed(2);
+  document.getElementById('costWaterTotal').innerText = cWater.toFixed(2);
+
+  document.getElementById('outFAInput').innerText = wFA.toFixed(1);
+  document.getElementById('outFANorm').innerText = normFA.toFixed(1);
+  document.getElementById('rateFA').innerText = rFA.toFixed(2);
+  document.getElementById('costFATotal').innerText = cFA.toFixed(2);
+
+  document.getElementById('outCA20Input').innerText = wCA20.toFixed(1);
+  document.getElementById('outCA20Norm').innerText = normCA20.toFixed(1);
+  document.getElementById('rateCA20').innerText = rCA20.toFixed(2);
+  document.getElementById('costCA20Total').innerText = cCA20.toFixed(2);
+
+  document.getElementById('outCA10Input').innerText = wCA10.toFixed(1);
+  document.getElementById('outCA10Norm').innerText = normCA10.toFixed(1);
+  document.getElementById('rateCA10').innerText = rCA10.toFixed(2);
+  document.getElementById('costCA10Total').innerText = cCA10.toFixed(2);
+
+  document.getElementById('outAdmixInput').innerText = wAdmix.toFixed(2);
+  document.getElementById('outAdmixNorm').innerText = normAdmix.toFixed(2);
+  document.getElementById('rateAdmix').innerText = rAdmix.toFixed(2);
+  document.getElementById('costAdmixTotal').innerText = cAdmix.toFixed(2);
+
+  // Cost Summary
+  document.getElementById('outTotalCost').innerText = totalCost.toFixed(2);
+  document.getElementById('outBinderCostPct').innerText = binderCostPct;
+  document.getElementById('outAggCostPct').innerText = aggCostPct;
+  document.getElementById('outAdmixCostPct').innerText = admixCostPct;
+
+  // Toggle SCM Row
+  const scmRow = document.getElementById('scmRow');
+  if (scmType === 'none') {
+    scmRow.style.display = 'none';
+  } else {
+    scmRow.style.display = 'table-row';
+    document.getElementById('outScmName').innerText = scmType === 'flyash' ? 'Fly Ash' : 'GGBS';
+  }
+
+  document.getElementById('resultsCard').style.display = 'block';
+
+  // --- EXCEL LOGGING ---
+  const currentTimestamp = new Date().toLocaleString();
+  const trialRecord = {
+    "Timestamp": currentTimestamp,
+    "Audit Trial Name": trialName,
+    "Calculated Yield (m3)": totalYield.toFixed(3),
+    "Wet Density (kg/m3)": Math.round(wetDensity),
+    "Est. fck (N/mm2)": fck.toFixed(1),
+    "Est. Mean Str (N/mm2)": f_prime_ck.toFixed(1),
+    "Est. Slump (mm)": Math.round(estSlump),
+    "W/B Ratio": wbRatio.toFixed(2),
+    "Cement per m3 (kg)": normCement.toFixed(1),
+    "SCM per m3 (kg)": normSCM.toFixed(1),
+    "Water per m3 (kg)": normWater.toFixed(1),
+    "Sand per m3 (kg)": normFA.toFixed(1),
+    "CA 20mm per m3 (kg)": normCA20.toFixed(1),
+    "CA 10mm per m3 (kg)": normCA10.toFixed(1),
+    "Admix per m3 (kg)": normAdmix.toFixed(2),
+    "Total Cost (₹/m3)": totalCost.toFixed(2)
+  };
+
+  trialDatabase.push(trialRecord);
+}
+
+// Download Excel Function
+function downloadExcelLog() {
+  if (trialDatabase.length === 0) {
+    alert("No reverse audit trials recorded yet. Click 'Run Reverse Calculation' first.");
+    return;
+  }
+
+  const worksheet = XLSX.utils.json_to_sheet(trialDatabase);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Reverse Mix Audits");
+
+  const max_width = trialDatabase.reduce((w, r) => Math.max(w, r["Audit Trial Name"].length), 10);
+  worksheet["!cols"] = [ { wch: 20 }, { wch: max_width + 5 } ];
+
+  XLSX.writeFile(workbook, "Reverse_Concrete_Mix_Audits_Log.xlsx");
+}
+</script>
+
+</body>
+</html>
