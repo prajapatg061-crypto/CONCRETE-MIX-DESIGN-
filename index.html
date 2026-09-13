@@ -3,9 +3,51 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Advanced Concrete Mix Design & Rate Analysis Calculator</title>
+  
+  <!-- Primary Meta Tags -->
+  <title>Concrete Mix Design & Rate Analysis Calculator (IS 10262:2019)</title>
+  <meta name="title" content="Concrete Mix Design & Rate Analysis Calculator (IS 10262:2019)">
+  <meta name="description" content="Calculate concrete mix proportions according to IS 10262:2019 and IS 456. Performs 20mm/10mm aggregate blending, field moisture corrections, mechanical property estimation, rate analysis, and Excel auto-logging.">
+  <meta name="keywords" content="concrete mix design, IS 10262 2019, rate analysis, civil engineering calculator, concrete batching, water cement ratio, fly ash mix design">
+  <meta name="author" content="Concrete Mix Design Tool">
+
+  <!-- Canonical Link -->
+  <link rel="canonical" href="https://example.com/concrete-mix-design-calculator">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://example.com/concrete-mix-design-calculator">
+  <meta property="og:title" content="Concrete Mix Design & Rate Analysis Calculator (IS 10262:2019)">
+  <meta property="og:description" content="Perform IS 10262:2019 concrete mix proportioning, field moisture adjustments, rate analysis, and export trial logs directly to Excel.">
+  <meta property="og:image" content="https://example.com/og-image.jpg">
+
+  <!-- Twitter Card -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://example.com/concrete-mix-design-calculator">
+  <meta property="twitter:title" content="Concrete Mix Design & Rate Analysis Calculator (IS 10262:2019)">
+  <meta property="twitter:description" content="Perform IS 10262:2019 concrete mix proportioning, field moisture adjustments, rate analysis, and export trial logs directly to Excel.">
+  <meta property="twitter:image" content="https://example.com/og-image.jpg">
+
+  <!-- JSON-LD Structured Data: SoftwareApplication -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Concrete Mix Design & Rate Analysis Calculator",
+    "operatingSystem": "All",
+    "applicationCategory": "EducationalApplication",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "INR"
+    },
+    "description": "An interactive web tool for concrete mix design complying with IS 10262:2019 and IS 456:2000 standard algorithms, complete with field moisture correction and cost analysis."
+  }
+  </script>
+
   <!-- Include SheetJS (XLSX) Library for seamless Excel export -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  
   <style>
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background-color: #f1f5f9; margin: 0; padding: 20px; color: #1e293b; }
@@ -57,6 +99,15 @@
     .print-btn:hover { background: #047857; }
     
     .status-badge { display: inline-block; background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 20px; font-size: 0.82rem; font-weight: bold; margin-left: 10px; }
+
+    /* Informational & Educational Content Styling */
+    .info-section { margin-top: 45px; border-top: 2px solid #e2e8f0; padding-top: 25px; }
+    .info-section h2 { color: #0f172a; font-size: 1.35rem; margin-bottom: 12px; }
+    .info-section h3 { color: #1e3a8a; font-size: 1.05rem; margin-top: 18px; margin-bottom: 8px; }
+    .info-section p { font-size: 0.92rem; line-height: 1.6; color: #475569; margin-bottom: 12px; }
+    .faq-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px 16px; margin-bottom: 12px; }
+    .faq-item h4 { margin: 0 0 6px 0; font-size: 0.95rem; color: #1e293b; }
+    .faq-item p { margin: 0; font-size: 0.88rem; color: #64748b; }
   </style>
 </head>
 <body>
@@ -359,6 +410,27 @@
     <button type="button" class="btn-excel" onclick="downloadExcelLog()">Download All Saved Trials to Excel (.xlsx)</button>
     <div class="button-group">
       <button type="button" class="print-btn" onclick="window.print()">Print Cost Sheet / Save PDF</button>
+    </div>
+  </div>
+
+  <!-- ON-PAGE HUMAN-READABLE CONTENT & FAQ SECTION (~250 WORDS) -->
+  <div class="info-section">
+    <h2>About IS 10262:2019 Concrete Mix Design & Rate Analysis</h2>
+    <p>
+      This civil engineering web application automates concrete mix proportioning in full accordance with <strong>IS 10262:2019</strong> and <strong>IS 456:2000</strong> standards. Designed for quality control engineers, ready-mix concrete (RMC) plants, and site managers, the calculator converts structural specifications and raw material physical properties into precise saturated surface-dry (SSD) and batch-ready field weights per cubic meter (m³).
+    </p>
+    <p>
+      Beyond standard mix proportions, the tool incorporates dual coarse aggregate blending (20mm and 10mm), supplementary cementitious materials (Fly Ash or GGBS replacement), chemical admixture dosage (PCE superplasticizers), and automatic field moisture adjustments. Integrated rate analysis provides immediate cost transparency and breakdowns per unit volume.
+    </p>
+
+    <h3>Frequently Asked Questions (FAQ)</h3>
+    <div class="faq-item">
+      <h4>How does the calculator perform aggregate moisture corrections?</h4>
+      <p>Field batching requires adjusting SSD weights for free surface moisture and absorption. Water absorbed by aggregates is subtracted, while surface moisture is deducted from mixing water and added to aggregate batching weights.</p>
+    </div>
+    <div class="faq-item">
+      <h4>What are the standard target strength margins in IS 10262:2019?</h4>
+      <p>Target mean strength ($f'_{ck}$) is computed as $f'_{ck} = f_{ck} + 1.65 \times S$, where $S$ is the standard deviation based on the grade of concrete (e.g., 5.0 N/mm² for M30–M50 grades).</p>
     </div>
   </div>
 </div>
